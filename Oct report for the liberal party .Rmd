@@ -1,0 +1,158 @@
+---
+title: "October report from the Petit Poll for the Liberal Party "
+author: "Tzuying Yu,"
+date: '2020-10-07'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+```
+
+# Non-technical Executive summary
+As a junior statistician at Petit Poll, this report discusses the results of stimulated surveys designed for the Liberal Party to glance at residents' opinions in the "Toronto Centre" riding. With the second wave of coronavirus addressed by the federal government, the stimulated survey is designed to collect public thoughts toward COVID-19 outspread in the Toronto Centre area. 
+
+# Introduction
+Recently, with the confirmation of the second wave coronavirus outbreak, it is critical to know people's thoughts. The Toronto Centre riding has a population of 130,323 with a population density of 9,769.3 per $$km^2$$. As we all know, the higher the population density, the higher chance of coronavirus exposure. Understanding residents' opinions help the Liberal government develop a corresponding plan that ensures the city is prepared for the second or even future waves of COVID-19. After collecting the responses of ten COVID-19 related public issues, we believed that the federal government is doing well in responding to COVID-19 issues nationally yet fails to tackle the COVID-19 situation locally. 
+In the next section, we describe the survey methodology and stimulations. Then, present the stimulated survey results visually. After that, we discuss some interesting results and a summary. We conclude with future work and limitations.
+
+# Survey methodology 
+This survey population is residents whose living address is included in the Toronto Centre riding (See Appendix 1). This survey's frame is a list of all the mailing addresses within the Toronto Centre riding map. The list of mailing address is obtained from the Canada Post website.
+The methodology of collecting sample data is a single-stage simple random sample without replacement, the SRSWOR. The sample population is 1000 random samples selected from the population frame, the complete mailing list of Toronto Centre riding. We mailed a QR-code embedded with the online survey link to each selected sample address to approach the respondents. According to the Canada Post website, the cost of each letter mailing is 0.83CAD. Thus, the cost of the mailing process of this survey is 830 CAD. Respondents' privacy values highly by Petit Poll. The action we took to protect respondents' privacy is to keep the response anonymous. After collecting data, we change the mailing address to an index number, so the sample data will not present any personal information. We also asked the respondents to agree with electronic consent in the online survey. With the double secure path, we guarantee to protect respondents' privacy.
+
+# Survey Stimulation
+There are ten questions in the stimulated online survey. See full question in (Appendix 2 to 7). Based on the chosen survey methodology, N represents the population frame we choose, and n represents the sample frame we choose, which is 1000. The selected sample has a probability of $$C^N_{n}$$. Therefore, we stimulate the survey data using the sample()  to generate 1000 random sample answers for each survey question. The random sample for each different question is constructed by the different probability of potential answers. Since the survey is stimulated to be as close as reality, the probability set for potential answers is designed to predict the sample population's answer. 
+```{r stimulate survey data, message=FALSE, warning=FALSE, include=FALSE}
+set.seed(100)
+#create 10 question variable, each with 1000 random sample answers.
+q1 <- sample(c("Yes", "No"), 1000, TRUE, c(0.85, 0.15))
+q2 <- sample(1:5, 1000, TRUE,c(0.1, 0.15, 0.4, 0.25, 0.1) )
+q3 <- sample(1:5, 1000, TRUE, c(0.2, 0.25, 0.35, 0.15, 0.05) )
+q4 <- sample(1:5, 1000, TRUE,c(0.02,0.1,0.2,0.38,0.3))
+q5 <- sample(c("Less", "Same", "More","NA"), 1000, TRUE,c(0.2, 0.3, 0.45, 0.05))
+q6 <- sample(c("government_website","social_media","radio", "TV", "newspaper", "family_friend","Other","NA"),1000, TRUE, c(0.1, 0.4, 0.08, 0.26, 0.1, 0.03, 0.02, 0.01))
+q7 <- sample(c("Yes", "No","NA"), 1000, TRUE, c(0.9, 0.08, 0.02))
+q8 <- sample(c("Yes", "No","NA"), 1000, TRUE, c(0.6, 0.39, 0.01))
+q9 <- sample(c("Yes", "No","NA"), 1000, TRUE, prob = c(0.24, 0.65, 0.11))
+q10 <- sample(c("Liberal", "Conservative", "NDP", "Green", "People", "NA"), 1000, TRUE, prob = c(0.35, 0.31,0.2, 0.07, 0.06, 0.01 ))
+
+```
+
+```{r create tibble for stimulated data, include=FALSE}
+#Put all random sample answers for each question into a tibble and rename
+sample_data <- tibble(consent = q1, codvid = q2, local_gov = q3, lib_gov = q4, healthcare = q5, freq_tool = q6, ext_border = q7, covid_election = q8, Nrb = q9, support_loc = q10 )
+
+#Add id number to each row
+with_id <- sample_data %>% add_column( id = 1:1000, .before = "consent")
+
+#Filter those who didn't fill out the survey due to dissagreement of consent
+complete <- with_id %>% filter(consent == "Yes")
+```
+
+# Result
+In this section, the result of each question will be visualized into a graph.
+
+Question 1:
+```{r echo=FALSE}
+g1 <- sample_data %>% ggplot(aes(x = consent, fill = as.factor(consent)))+ geom_bar()+labs(title = "This shows a degree of completion of the survey", subtitle = "which is quite high!", fill = "consent", tag = "Figure 1") + theme(legend.position = "none") + theme_light() +scale_fill_brewer(palette="Spectral")
+g1
+```
+
+Question2: 
+```{r echo=FALSE}
+g2 <- complete %>% ggplot(aes(x = codvid, fill = as.factor(codvid)))+ geom_bar()+labs(title = "How you think about the COVID-19 outbreak? ",subtitle = "People ", x = "severity",fill = "severity", tag = "Figure 2") + theme(legend.position = "none") +theme_light()+scale_fill_brewer(palette="Spectral")
+g2
+```
+
+
+```{r echo=FALSE}
+g3 <- complete %>% ggplot(aes(x = local_gov, fill = as.factor(local_gov)))+ geom_bar()+labs(title = "Is local government doing well when facing COVID-19 outbreak? ", x = "satisfication",subtitle = "Most people think No!",fill = "statisfication" ,tag = "Figure 3") + theme(legend.position = "none") + theme_light()+scale_fill_brewer(palette="Spectral")
+g3
+```
+
+```{r echo=FALSE}
+g4 <- complete %>% ggplot(aes(x = lib_gov, fill = as.factor(lib_gov)))+ geom_bar()+labs(title = "Is liberal government doing well on control COVID-19 outbreak? ", x = "Statisfication",subtitle = "Most people think yes!",fill = "satisfication",tag = "Figure 4") + theme(legend.position = "none") + theme_light()+scale_fill_brewer(palette="Spectral")
+g4
+```
+
+```{r echo=FALSE}
+g5 <- complete %>% ggplot(aes(x = healthcare, fill = as.factor(healthcare)))+ geom_bar()+labs(title = "How should government spend on healthcare?",fill = "degree of expenditure", subtitle = "People prefer more healthcare during COVID-19 outbreak." ,tag = "Figure 5") + theme(legend.position = "none")+theme_light()+scale_fill_brewer(palette="Spectral")
+g5
+```
+
+```{r echo=FALSE}
+g6 <- complete %>% ggplot(aes(x = freq_tool, fill = as.factor(freq_tool)))+ geom_bar()+labs(title =  "What tools most people used to access COVID-19 information?",subtitle = "Social media and TV is the most popular tools",fill= "tools", tag = "Figure 6") + theme(legend.position = "none")+ theme_light()+scale_fill_brewer(palette="Spectral")
+g6
+```
+
+```{r echo=FALSE}
+g7 <- complete %>% ggplot(aes(x = ext_border, fill = as.factor(ext_border)))+ geom_bar()+labs(title =  "Should the government extend the closure of Canada-US border line?",subtitle = "Majority of people say yes!", tag = "Figure 7") + theme(legend.position = "none") + theme_light()+scale_fill_brewer(palette="Spectral")
+g7
+```
+
+```{r echo=FALSE}
+g8 <- complete %>% ggplot(aes(x = covid_election, fill = as.factor(covid_election)))+ geom_bar()+labs(title = "Do you think COVID-19 will affect the 10/26 by-election of Toronto Centre?", subtitle ="Most people say Yes!",fill = "answer" ,tag = "Figure 8") + theme(legend.position = "none")+theme_light()+scale_fill_brewer(palette="Spectral")
+g8
+```
+
+```{r echo=FALSE}
+g9 <- complete %>% ggplot(aes(x = Nrb, fill = as.factor(Nrb)))+ geom_bar()+labs(title =  "Did you apply for New Recovery Benefits which started on 9/27?", subtitle = "More than half say No!", fill = "answer", tag = "Figure 9") + theme(legend.position = "none") +theme_light()+scale_fill_brewer(palette="Spectral")
+g9
+```
+
+```{r echo=FALSE}
+g10 <- complete %>% ggplot(aes(x = support_loc, fill = as.factor(support_loc)))+ geom_bar()+labs(title =  "Which party support local business affected by COVID-19 the most?",subtitle = "Not surprise that Liberal, Convservative,and NDP support the most ", fill = "party", tag = "Figure 10") + theme(legend.position = "none")+theme_light()+scale_fill_brewer(palette="Spectral")
+g10
+```
+
+
+# Discussion
+- According to Figure 2 and Figure 3, we found that many residents in Toronto Centre are not satisfied with how the local government deals with the COVID-19 outbreak. However, we surprisingly found that most people were satisfied with the Liberal government's ability to control the outbreak within the same population. In the viewpoint, the reason that leads to this result is that the current congressman representing the riding of Toronto Centre has resigned. Therefore, there is no representative to reflect the resident's needs during the pandemic. This causes a reduction in the satisfaction of the local government's ability to control the pandemic situation.
+- Based on Figure 1, the survey response rate is very high in the stimulation. However, in the real world, the response rate might not be this high. 
+- Refer to Figure 11, most people who say the federal government should spend more on healthcare budget did not apply for New Recovery Benefits. Logically, people who asked for more healthcare would be willing to apply for financial support. Those people may need other types of support to improve their healthcare rather than financial support. 
+
+```{r echo=FALSE}
+g11<- complete%>%filter(Nrb != "NA") %>% ggplot(aes(x = Nrb, fill = as.factor(healthcare)))+ geom_bar()+labs(title =  "Do people opinon on healthcare implies their application of NRB? ", fill = "healthcare expenditure", tag = "Figure 11") + theme(legend.position = "none") +theme_light()+scale_fill_brewer(palette="Spectral")
+g11
+```
+
+# Next Step
+The data frame we used in this stimulated online survey is a list of mailing addresses provided by Canada Post. In this way, although it is a convenient and inexpensive way to do a survey, we frame the population to people who have a place to live. This will lead to a biases selection of the population because we are not considering minorities and homeless opinions. We should cooperate with social welfare organizations to reach out to minorities and the homeless to frame the population precisely.
+
+# Appendix
+- [Link to online survey](https://forms.gle/HkoSLtyHgaySUFnT8)
+- ! [Appendix 1] (/Users/nicoleyu/STA304/35108.pdf)
+- ! [Appendix 2] (/Users/nicoleyu/STA304/Q1.png)
+- ! [Appendix 3] (/Users/nicoleyu/STA304/Q2 -3.png)
+- ! [Appendix 4] (/Users/nicoleyu/STA304/Q4-5.png)
+- ! [Appendix 5] (/Users/nicoleyu/STA304/Q6-7.png)
+- ! [Appendix 6] (/Users/nicoleyu/STA304/Q8-9.png)
+- ! [Appendix 7] (/Users/nicoleyu/STA304/Q10.png)
+
+# References
+- Wickham et al., (2019). Welcome to the tidyverse. Journal of Open
+  Source Software, 4(43), 1686, https://doi.org/10.21105/joss.01686
+- R Core Team (2020). R: A language and environment for statistical
+  computing. R Foundation for Statistical Computing, Vienna, Austria.
+  URL https://www.R-project.org/.
+- JJ Allaire and Yihui Xie and Jonathan McPherson and Javier Luraschi
+  and Kevin Ushey and Aron Atkins and Hadley Wickham and Joe Cheng and
+  Winston Chang and Richard Iannone (2020). rmarkdown: Dynamic Documents
+  for R. R package version 2.3. URL https://rmarkdown.rstudio.com.
+- Yihui Xie and J.J. Allaire and Garrett Grolemund (2018). R Markdown:
+  The Definitive Guide. Chapman and Hall/CRC. ISBN 9781138359338. URL
+  https://bookdown.org/yihui/rmarkdown.
+- H. Wickham. ggplot2: Elegant Graphics for Data Analysis.
+  Springer-Verlag New York, 2016.URL https://ggplot2.tidyverse.org.
+- Maria Cansino(2020).Two-thirds of Canadians satisfied with federal government’s handling of COVID-19: poll, URL https://www.burnabynow.com/two-thirds-of-canadians-satisfied-with-federal-government-s-handling-of-covid-19-poll-1.24103683.
+- Sophia Harris (2020) Why many Canadians support the Canada-U.S. border closure, despite the costs | CBC News. URL https://www.cbc.ca/news/business/canada-u-s-border-closure-support-mayors-tourism-trump-1.5722974.
+- Wickham et al., (2019). Welcome to the tidyverse. Journal of Open
+  Source Software, 4(43), 1686, https://doi.org/10.21105/joss.01686
+- Hadley Wickham, Romain François, Lionel Henry and Kirill Müller
+  (2020). dplyr: A Grammar of Data Manipulation. R package version
+  1.0.2. https://CRAN.R-project.org/package=dplyr
+ 
+  
